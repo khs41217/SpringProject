@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="com.cat.mappers.myPageMappers">
+	<select id="selectOrderList" parameterType="map" resultType="orderVO">
+		select * 
+		from (select rownum rn,  a.*
+		        from (select o.idx, TO_CHAR(o.orderDate, 'YYYY-MM-DD') orderDate, o.status, g.idx goodsIdx, g.img goodsImg, g.name goodsName, g.price goodsPrice
+		                from orders o inner join goods g on o.goods_idx = g.idx 
+		                where o.member_id = #{id} and o.status != '주문 취소'
+		                order by o.idx desc) a) 
+		where rn between (#{page}-1)*10+1 and #{page}*10
+	</select>
+	
+	<select id="selectCollectionList" parameterType="map" resultType="goodsVO">
+		select * 
+		from (select rownum rn,  a.*
+		        from (select TO_CHAR(gc.regdate, 'YYYY-MM-DD') regDate, gc.idx reviewIdx, g.idx, g.img, g.name, g.price, round((g.score/g.vote_num),1) result_score, g.vote_num
+		                from goodsCollection gc inner join goods g on gc.goods_idx = g.idx 
+		                where gc.member_id = #{id} and gc.type = #{type}
+		                order by gc.idx desc) a) 
+		where rn between (#{page}-1)*10+1 and #{page}*10
+	</select>
+	
+	<select id="delAfterFoundCollection" parameterType="map" resultType="goodsVO">
+		select * 
+		from (select rownum rn,  a.*
+		        from (select TO_CHAR(gc.regdate, 'YYYY-MM-DD') regDate, gc.idx reviewIdx, g.idx, g.img, g.name, g.price, round((g.score/g.vote_num),1) result_score, g.vote_num
+		                from goodsCollection gc inner join goods g on gc.goods_idx = g.idx 
+		                where gc.member_id = #{id} and gc.type = #{type}
+		                order by gc.idx) a) 
+		where rn = #{page}*10
+	</select>
+	
+	<select id="totCollection" parameterType="map" resultType="int">
+		select count(*) from goodsCollection where member_id = #{id} and type = #{type}
+	</select>
+	
+	<select id="totMyReview" parameterType="String" resultType="int">
+		select count(*) from review where member_id = #{id}
+	</select>
+	
+	<select id="selectMyReviewList" parameterType="map" resultType="goodsVO">
+		select * 
+		from (select rownum rn,  a.*
+		        from (select TO_CHAR(r.writeDate, 'YYYY-MM-DD') regDate, r.idx reviewIdx, g.idx, g.img, g.name, g.price
+		                from review r inner join goods g on r.goods_idx = g.idx 
+		                where r.member_id = #{id}
+		                order by r.idx desc) a) 
+		where rn between (#{page}-1)*10+1 and #{page}*10
+	</select>
+	
+	<select id="selectCollection" parameterType="int" resultType="goodsCollectionVO">
+		select * from goodsCollection where idx = #{idx}
+	</select>
+	
+	<select id="selectCollectionType2" parameterType="map" resultType="goodsCollectionVO">
+		select * from goodsCollection where goods_idx = #{goodsIdx} and member_id = #{memberId} and type = #{type}
+	</select>
+	
+	<delete id="deleteCollection" parameterType="map">
+		delete from goodsCollection where goods_idx = #{goodsIdx} and member_id = #{memberId} and type = #{type}
+	</delete>
+	
+ 	<insert id="insertReview" parameterType="reviewVO">
+		INSERT INTO review (idx, member_id, goods_idx, star, title, content, writedate) values
+		(REVIEW_SEQ.nextval, #{member_id}, #{goods_idx}, #{star}, #{title}, #{content}, sysdate)
+	</insert>
+	
+	<update id="updateGoodsStar" parameterType="reviewVO">
+		update goods set score = score + #{star}, vote_num = vote_num+1 where idx = #{goods_idx}
+	</update>
+	
+	<update id="updateGoodsStarOnly" parameterType="reviewVO">
+		update goods set score = score + #{star} where idx = #{goods_idx}
+	</update>
+	
+	<update id="updateReview" parameterType="reviewVO">
+		update review set title = #{title}, content = #{content}, star = #{star} where idx = #{idx}
+	</update>
+	
+	<select id="selectReview" parameterType="int" resultType="reviewVO">
+		select * from review where idx = #{idx}
+	</select>
+	
+	<update id="updatePhone" parameterType="map">
+		update member set phone = #{phone} where id = #{id}
+	</update>
+	
+	<update id="updatePw" parameterType="map">
+		update member set pw = #{pw} where id = #{id}
+	</update>
+	
+</mapper>

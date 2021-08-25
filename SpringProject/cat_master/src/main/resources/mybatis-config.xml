@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+<typeAliases>
+        <typeAlias alias="String" type="java.lang.String"/>
+        <typeAlias alias="map" type="java.util.Map"/>        
+        <typeAlias alias="memberVO" type="com.cat.dto.MemberVO"/>    
+        <typeAlias alias="goodsVO" type="com.cat.dto.GoodsVO"/>
+        <typeAlias alias="goodsDetailsVO" type="com.cat.dto.GoodsDetailsVO"/>            
+        <typeAlias alias="chattingVO" type="com.cat.dto.ChattingVO"/>  
+        <typeAlias alias="reviewVO" type="com.cat.dto.ReviewVO"/>          
+        <typeAlias alias="basketVO" type="com.cat.dto.BasketVO"/>
+        <typeAlias alias="goodsCollectionVO" type="com.cat.dto.GoodsCollectionVO"/>
+        <typeAlias alias="orderVO" type="com.cat.dto.OrderVO"/>
+    </typeAliases>
+</configuration>

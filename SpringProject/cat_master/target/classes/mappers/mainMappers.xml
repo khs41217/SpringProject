@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cat.mappers.mainMappers">
+ 	<!-- 장바구니 -->
+ 	 <select id="selectBasket" parameterType="String" resultType="basketVO">
+ 		select b.*, g.*
+		from basket b, goods g
+		where b.goods_idx = g.idx
+		and b.member_id = #{id}
+ 	</select>
+ 	<update id="minusBasket" parameterType="map">
+ 		update basket set quantity = quantity-1 where member_id =#{id} and idx =#{idx}
+ 	</update>
+ 	<update id="plusBasket" parameterType="map">
+ 		update basket set quantity = quantity+1 where member_id =#{id} and idx =#{idx}
+ 	</update>
+ 	<delete id="deleteBasket" parameterType="map">
+ 		delete basket where member_id =#{id} and idx =#{idx}
+ 	</delete>
+ 	<select id="quantityCheck" parameterType="map" resultType="basketVO">
+ 		select quantity from basket where member_id =#{id} and idx=#{idx}
+ 	</select>
+ 	
+ 	<insert id="insertBasket" parameterType="map">
+ 		insert into basket(idx, member_id, goods_idx, quantity) values(basket_seq.nextval, #{id}, #{idx}, #{quantity}) 	
+ 	</insert>
+ 	<select id="checkInbasket" parameterType="map" resultType="String">
+ 		select idx from basket where member_id = #{id} and goods_idx = #{idx}
+ 	</select>
+ 	
+ 	<delete id="delBasket" parameterType="int">
+ 		delete basket where idx =#{idx}
+ 	</delete>
+ 	
+ 	<!-- 장바구니 -->
+ 	<select id="selectGoods" parameterType="int" resultType="goodsVO">
+ 		select * from goods where idx = #{idx}
+ 	</select>
+ 	
+	<select id="scoreDescList" resultType="goodsVO">
+ 		select goods.* from (select rownum rnum, g2.* from (select g1.idx ,g1.name,g1.img ,g1.price, g1.quantity, g1.category, round((g1.score/g1.vote_num),1) result_score, g1.vote_num  from goods g1 order by (score/vote_num) desc) g2) goods where rnum between 1 and 6
+ 	</select>
+ 	
+ 	<select id="voteNumDescList" resultType="goodsVO">
+ 		select goods.* from (select rownum rnum, g2.* from (select g1.idx ,g1.name,g1.img ,g1.price, g1.quantity, g1.category, round((g1.score/g1.vote_num),1) result_score, g1.vote_num  from goods g1 order by vote_num desc) g2) goods where rnum between 1 and 6
+ 	</select>
+ 	
+ 	<select id="goodsRank" resultType="goodsVO">
+ 		select goods.* from (select rownum rnum, g2.* from (select g1.idx ,g1.name,g1.img ,g1.price, g1.quantity, g1.category, round((g1.score/g1.vote_num),1) result_score, g1.vote_num  from goods g1 order by quantity desc) g2) goods where rnum between 1 and 9
+ 	</select> 
+ 	
+ 	<select id="goodsDetails" parameterType="map" resultType="goodsDetailsVO">
+ 		select goods.idx, goods.name, goods.price, goodsdetails.description, goodsdetails.detailsimg, round((goods.score/goods.vote_num),1) result_score, goods.vote_num, gc.type from goods join goodsdetails on goods.idx = goodsdetails.goods_idx left join (select type, goods_idx from goodsCollection where member_id = '${id}' and type = 'like') gc on gc.goods_idx = goods.idx where goods.idx = ${idx}
+ 	</select>
+ 	
+ 	<select id="DetailsImg" parameterType="int" resultType="String">
+ 		select img from goodsimg where goods_idx = #{idx}
+ 	</select>
+ 	
+ 	<insert id="insertLike" parameterType="map">
+ 		insert into goodscollection(idx, member_id, goods_idx, type, regdate) values(goodsCollection_seq.nextval, '${like_id}', ${like_idx}, 'like', sysdate)
+ 	</insert>
+ 	
+ 	<delete id="deleteLike" parameterType="map">
+ 		delete from goodscollection where goods_idx = ${unlike_idx} and member_id = '${unlike_id}' and type = 'like'
+ 	</delete>
+ 	
+ 	<select id="selectSearch" parameterType="map" resultType="goodsVO">
+       select g2.idx ,g2.name,g2.img ,g2.price, g2.quantity, g2.category, round((g2.score/g2.vote_num),1) result_score, g2.vote_num  from (select rownum rnum, g.* from goods g where name like '%${keyword}%' or category like '%${keyword}%') g2 where rnum between ((#{page}-1)*10+1) and #{page}*10
+    </select>
+ 	
+ 	<select id="selectSearchCount" parameterType="String" resultType="int">
+ 		select count(*) from goods where name like '%${keyword}%' or category like '%${keyword}%'
+ 	</select>
+ 	
+ 	<insert id="insertRecently" parameterType="map">
+ 		insert into goodscollection(idx, member_id, goods_idx,type ,regdate) values(goodsCollection_seq.nextval, '${id}', #{idx}, 'recently', sysdate)
+ 	</insert>
+ 	
+ 	<delete id="deleteRecently" parameterType="map">
+ 		delete from goodscollection where member_id = '${id}' and goods_idx = #{idx} and type = 'recently'
+ 	</delete>
+ 	
+ 	<select id="selectRecently" parameterType="map" resultType="String">
+ 		select type from goodscollection where member_id = '${id}' and goods_idx = #{idx} and type = 'recently'
+ 	</select>
+ 	
+ 	<select id="selectReviewInProduct" parameterType = "int" resultType="reviewVO">
+ 		select r2.*, member.profile memberProfile, member.name memberName from (select rownum rnum, r1.* from (select review.* from review where goods_idx = #{goods_idx} order by idx desc)r1) r2 join member on member.id = r2.member_id where rnum between 1 and 3
+ 	</select>
+ 	
+ 	<insert id="insertChatting" parameterType="map">
+ 		insert into chat (idx, sender, recipient, content, sendDate) values
+ 		(chat_seq.nextval, #{sender}, #{recipient}, #{content}, sysdate)
+ 	</insert>
+ 	
+ 	<select id="selectSearchDesc" parameterType="map" resultType="goodsVO">
+       select goods.* 
+       from (select rownum rnum, g2.* 
+       			from (select g1.idx ,g1.name,g1.img ,g1.price, g1.quantity, g1.category, round((g1.score/g1.vote_num),1) result_score, g1.vote_num  
+       					from goods g1 order by ${keyword} desc) g2) goods 
+       where rnum between ((#{page}-1)*10+1) and #{page}*10
+    </select>
+    
+    <select id="selectAllGoodsCount" resultType="int">
+       select count(*) from goods   
+    </select>
+    
+    <select id="selectMainReview" resultType="reviewVO">
+    	select r2.*, m.profile memberProfile, m.name memberName 
+    	from (select rownum rnum, r1.* 
+    			from review r1 
+    			where star >= 4 order by idx desc) r2 
+    	join member m on m.id = r2.member_id 
+    	where rnum between 1 and 4
+    </select>
+    <insert id="insertOrder" parameterType="map">
+ 		insert into orders values(ORDER_SEQ.nextval, #{id}, #{idx}, #{qty}, #{addr1}, #{addr2}, #{addr3}, sysdate, #{status}, #{name}, #{phone}, #{req})
+ 	</insert>
+ 
+ 	<insert id="insertAvailableReviews" parameterType="map">
+ 		insert into goodscollection(idx, member_id, goods_idx,type ,regdate) values(goodsCollection_seq.nextval, '${id}', #{idx}, 'review', sysdate)
+ 	</insert>
+ 	
+ 	<update id="updateGoodsQuantity" parameterType="map">
+ 		update goods set quantity = quantity+1 where idx = #{idx}
+ 	</update>
+ 	
+ 	<delete id="clearBasket" parameterType="String">
+ 		delete from basket where member_id = #{id}
+ 	</delete>  
+ 	
+ 	<update id="updateMemberInfo" parameterType="map">
+ 		update member set addr1 = #{addr1}, addr2= #{addr2}, addr3= #{addr3} where id = #{id}
+ 	</update>
+ 	
+ 	<select id="selectChattingList" parameterType="String" resultType="chattingVO">
+ 		<![CDATA[
+ 			select rownum, a.* from (select * from chat where sender = #{id} or recipient = #{id} order by sendDate) a where rownum <100
+ 		]]>
+ 	</select>
+ 	
+ 	<select id="paging" parameterType="map"  resultType="reviewVo">
+       <![CDATA[
+       select r3.*from(select rownum rnum, r2.* from(select r.*, m.profile memberProfile from review r inner join member m on m.id=r.member_id order by writedate desc) r2) r3 where rnum>= #{startRowNum} and rnum<= #{endRowNum}
+       ]]>
+    </select>
+    
+ 	<select id="ReviewCnt" resultType="int">
+ 		select count(*) from review
+ 	</select>
+ 	
+ 	<select id="showReview" resultType="reviewVO">
+ 		select idx,star, member_id, title, content, writedate from review order by writedate
+ 	</select>
+ 	
+ 	 	<select id="selectOrder" parameterType="list" resultType="goodsVO">
+ 		select * from goods where idx = #{idx}
+ 	</select>
+ 	
+    <insert id="directInsertOrder" parameterType="map">
+ 		insert into orders values(ORDER_SEQ.nextval, #{id}, #{idx}, #{qty}, #{addr1}, #{addr2}, #{addr3}, sysdate, #{status}, #{name}, #{phone}, #{req})
+ 	</insert>
+</mapper>
